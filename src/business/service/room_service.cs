@@ -1,22 +1,18 @@
 using System;
-using System.Collections.Generic;
+using business.api;
 using business.entity;
+using business.game_server;
+using business.util;
 
-namespace business.service
+namespace business
 {
     public class RoomService
     {
-        private static RoomService _instance;
-
-        private RoomService() { }
+        private static RoomService g_roomService = new RoomService();
 
         public static RoomService GetInstance()
         {
-            if (_instance == null)
-            {
-                _instance = new RoomService();
-            }
-            return _instance;
+            return g_roomService;
         }
 
         public Room CreateRoom(User user, string title, string password, int maxPlayers, Room.GameInfo gameInfo)
@@ -26,7 +22,7 @@ namespace business.service
             if (newRoom == null)
                 return null;
 
-            newRoom.Password = password;
+            newRoom.SetPassword(password);
 
             int[] slotStatesLayout = null;
 
@@ -39,45 +35,47 @@ namespace business.service
                         gameType == GameType.GAME_DEATH_MATCH_HIGH ||
                         gameType == GameType.GAME_DEATH_MATCH_U ||
                         gameType == GameType.GAME_DEATH_MATCH_U2)
-                        slotStatesLayout = Constants.DEATH_MATCH_SLOT_LAYOUT;
+                        slotStatesLayout = DEATH_MATCH_SLOT_LAYOUT;
                     else if (gameType == GameType.GAME_CARDBALL_NORMAL ||
                              gameType == GameType.GAME_CARDBALL_HIGH)
-                        slotStatesLayout = Constants.CARD_BALL_SLOT_LAYOUT;
+                        slotStatesLayout = CARD_BALL_SLOT_LAYOUT;
                     else
-                        slotStatesLayout = Constants.NORMAL_GAME_SLOT_LAYOUT;
+                        slotStatesLayout = NORMAL_GAME_SLOT_LAYOUT;
                     break;
 
                 case MatchType.MATCH_CHALLENGE:
-                    slotStatesLayout = Constants.CHALLENGE_ROOM_SLOT_LAYOUT;
+                    slotStatesLayout = CHALLENGE_ROOM_SLOT_LAYOUT;
                     break;
 
                 case MatchType.MATCH_PRACTICE:
-                    slotStatesLayout = Constants.NORMAL_GAME_SLOT_LAYOUT;
-                    newRoom.Hidden = true;
+                    slotStatesLayout = NORMAL_GAME_SLOT_LAYOUT;
+                    newRoom.SetHidden(true);
                     break;
 
                 default:
                     break;
             }
 
-            newRoom.SetSlotStates(slotStatesLayout);
+            newRoom.SetSlotStates((Room.SlotState[])slotStatesLayout);
 
             int listIndex = newRoom.InsertUser(user);
-            user.Spot = newRoom;
-            newRoom.SetUserToSlot(listIndex, Constants.ROOM_MASTER_SLOT);
+            user.SetSpot(newRoom);
+            newRoom.SetUserToSlot(listIndex, ROOM_MASTER_SLOT);
 
-            user.SendAction(new RoomCreationActionTemplate(newRoom).Data);
+            user.SendAction(RoomCreationActionTemplate.Create(newRoom).Data);
+            // TODO: room creation fail
+
             ResetRoom(newRoom);
 
             RoomPlayerItemData item = new RoomPlayerItemData();
-            ActionData playerItemInfosActionData = new ActionData(0x71, item.ToByteArray());
+            ActionData playerItemInfosActionData = new ActionData(0x71, item, sizeof(RoomPlayerItemData));
             ActionDispatcher.Prepare()
-                .Action(new RoomPlayerJoinActionTemplate(user.Player, listIndex).Data)
+                .Action(RoomPlayerJoinActionTemplate.Create(user.Player, listIndex).Data)
                 .Action(playerItemInfosActionData)
-                .Send(new UserDestination(user));
+                .Send(UserDestination.Create(user));
 
             ActionData playerListEnd = new ActionData(0x63);
-            ActionDispatcher.Prepare().Action(playerListEnd).Send(new UserDestination(user));
+            ActionDispatcher.Prepare().Action(playerListEnd).Send(UserDestination.Create(user));
 
             if (!newRoom.Hidden)
                 NotifyServerOfRoomCreation(newRoom.Server, newRoom);
@@ -88,10 +86,10 @@ namespace business.service
         public void InsertUserIntoRoom(Room room, User user)
         {
             int listIndex = room.InsertUser(user);
-            user.Spot = room;
+            user.SetSpot(room);
 
             UpdateRoom(room);
-            user.SendAction(new RoomJoinActionTemplate(room).Data);
+            user.SendAction(RoomJoinActionTemplate.Create(room).Data);
 
             foreach (int userListIndex in room.UserQueue)
             {
@@ -100,21 +98,21 @@ namespace business.service
                     continue;
 
                 RoomPlayerItemData item = new RoomPlayerItemData();
-                ActionData playerItemInfosActionData = new ActionData(0x71, item.ToByteArray());
+                ActionData playerItemInfosActionData = new ActionData(0x71, item, sizeof(RoomPlayerItemData));
 
-                ActionDispatcher.Prepare().Action(new RoomPlayerJoinActionTemplate(userIn.Player, userListIndex).Data).Send(new UserDestination(user));
-                ActionDispatcher.Prepare().Action(playerItemInfosActionData).Send(new UserDestination(user));
+                ActionDispatcher.Prepare().Action(RoomPlayerJoinActionTemplate.Create(userIn.Player, userListIndex).Data).Send(UserDestination.Create(user));
+                ActionDispatcher.Prepare().Action(playerItemInfosActionData).Send(UserDestination.Create(user));
             }
 
-            RoomPlayerItemData newItem = new RoomPlayerItemData();
-            ActionData newPlayerItemInfosActionData = new ActionData(0x71, newItem.ToByteArray());
+            RoomPlayerItemData item2 = new RoomPlayerItemData();
+            ActionData playerItemInfosActionData2 = new ActionData(0x71, item2, sizeof(RoomPlayerItemData));
             ActionDispatcher.Prepare()
-                .Action(new RoomPlayerJoinActionTemplate(user.Player, listIndex).Data)
-                .Action(newPlayerItemInfosActionData)
-                .Send(new RoomDestination(room));
+                .Action(RoomPlayerJoinActionTemplate.Create(user.Player, listIndex).Data)
+                .Action(playerItemInfosActionData2)
+                .Send(RoomDestination.Create(room));
 
-            ActionData newPlayerListEnd = new ActionData(0x63);
-            ActionDispatcher.Prepare().Action(newPlayerListEnd).Send(new UserDestination(user));
+            ActionData playerListEnd = new ActionData(0x63, null, 0);
+            ActionDispatcher.Prepare().Action(playerListEnd).Send(UserDestination.Create(user));
 
             NotifyServerOfRoomPlayerCountUpdate(user.Server, room);
         }
@@ -141,12 +139,12 @@ namespace business.service
 
             User currentRoomMaster = room.RoomMaster;
             room.RemoveUser(userListIndex);
-            user.Spot = null;
+            user.SetSpot(null);
             User newRoomMaster = room.RoomMaster;
             UpdateRoom(room);
 
             ActionData exitRoomAction = new ActionData(0x26);
-            ActionDispatcher.Prepare().Action(exitRoomAction).Send(new UserDestination(user));
+            ActionDispatcher.Prepare().Action(exitRoomAction).Send(UserDestination.Create(user));
 
             if (room.UsersInCount != 0)
             {
@@ -155,13 +153,14 @@ namespace business.service
                     if (!room.InGame)
                         UpdateSlotInfo(room);
 
-                    ActionData changeRoomMasterAction = new ActionData(0x32, System.Text.Encoding.Unicode.GetBytes(newRoomMaster.Player.Name));
-                    ActionDispatcher.Prepare().Action(changeRoomMasterAction).Send(new RoomDestination(room));
+                    ActionData changeRoomMasterAction = new ActionData(0x32, newRoomMaster.Player.Name, (PLAYER_NAME_MAX_LEN + 1) * 2);
+                    ActionDispatcher.Prepare().Action(changeRoomMasterAction).Send(RoomDestination.Create(room));
                     NotifyServerOfRoomMasterChange(room.Server, room);
                 }
 
-                ActionData userExitedRoomAction = new ActionData(0x28, BitConverter.GetBytes(userListIndex));
-                ActionDispatcher.Prepare().Action(userExitedRoomAction).Send(new RoomDestination(room));
+                int listIndex = userListIndex;
+                ActionData userExitedRoomAction = new ActionData(0x28, listIndex, 4);
+                ActionDispatcher.Prepare().Action(userExitedRoomAction).Send(RoomDestination.Create(room));
 
                 NotifyServerOfRoomPlayerCountUpdate(room.Server, room);
             }
@@ -172,8 +171,8 @@ namespace business.service
                 GameServer server = room.Server;
                 server.DestroyRoom(room);
 
-                ActionData destroyRoomAction = new ActionData(0x2D, BitConverter.GetBytes(roomId));
-                ActionDispatcher.Prepare().Action(destroyRoomAction).Send(new ServerDestination(server, 1));
+                ActionData destroyRoomAction = new ActionData(0x2D, roomId, 4);
+                ActionDispatcher.Prepare().Action(destroyRoomAction).Send(ServerDestination.Create(server, 1));
             }
         }
 
@@ -197,7 +196,7 @@ namespace business.service
             foreach (int userIndex in room.UserQueue)
             {
                 User userIn = room.UserInListIndex(userIndex);
-                ActionData playerJoinSlotAction = new ActionData(0x4D, modificationResultData.ToByteArray());
+                ActionData playerJoinSlotAction = new ActionData(0x4D, modificationResultData, sizeof(SlotModificationResultData));
                 userIn.SendAction(playerJoinSlotAction);
             }
         }
@@ -209,26 +208,26 @@ namespace business.service
             int listIndex = room.GetSlotUserListIndex(slot);
             int slotState = (int)room.GetSlotState(slot);
             SlotModificationResultData modificationResultData = new SlotModificationResultData { ListId = listIndex, SlotNumber = slot, Function = slotState };
-            ActionData slotStateActionData = new ActionData(0x4D, modificationResultData.ToByteArray());
-            ActionDispatcher.Prepare().Action(slotStateActionData).Send(new RoomDestination(room));
+            ActionData slotStateActionData = new ActionData(0x4D, modificationResultData, sizeof(SlotModificationResultData));
+            ActionDispatcher.Prepare().Action(slotStateActionData).Send(RoomDestination.Create(room));
         }
 
         public void UpdateSlotInfo(Room room)
         {
             RoomSlotInfoData slotInfoData = new RoomSlotInfoData();
             Room.SlotInfos slotInfos = room.SlotInfos;
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 30; ++i)
             {
-                slotInfoData.SlotState[i] = (int)slotInfos.State[i];
+                slotInfoData.SlotState[i] = slotInfos.State[i];
                 slotInfoData.PlayerListIndex[i] = slotInfos.PlayerListIndex[i];
             }
-            ActionData slotInfoActionData = new ActionData(0x51, slotInfoData.ToByteArray());
-            ActionDispatcher.Prepare().Action(slotInfoActionData).Send(new RoomDestination(room));
+            ActionData slotInfoActionData = new ActionData(0x51, slotInfoData, sizeof(RoomSlotInfoData));
+            ActionDispatcher.Prepare().Action(slotInfoActionData).Send(RoomDestination.Create(room));
         }
 
         public void ChangeRoomState(Room room, bool open)
         {
-            room.Closed = !open;
+            room.SetClosed(!open);
         }
 
         public void SendMessageToRoom(Room room, User sender, string message)
@@ -237,8 +236,8 @@ namespace business.service
             if (userListIndex >= 0)
             {
                 RoomUserMessage roomUserMessageData = new RoomUserMessage { UserListIndex = userListIndex, Message = message };
-                ActionData roomUserMessageActionData = new ActionData(0x55, roomUserMessageData.ToByteArray());
-                ActionDispatcher.Prepare().Action(roomUserMessageActionData).Send(new RoomDestination(room));
+                ActionData roomUserMessageActionData = new ActionData(0x55, roomUserMessageData, 4 + (message.Length + 1) * 2);
+                ActionDispatcher.Prepare().Action(roomUserMessageActionData).Send(RoomDestination.Create(room));
             }
         }
 
@@ -250,8 +249,8 @@ namespace business.service
 
             Random random = new Random();
             int startRandomSeed = random.Next();
-            ActionData matchStartedActionData = new ActionData(0x33, BitConverter.GetBytes(startRandomSeed));
-            ActionDispatcher.Prepare().Action(matchStartedActionData).Send(new RoomDestination(room));
+            ActionData matchStartedActionData = new ActionData(0x33, startRandomSeed, 4);
+            ActionDispatcher.Prepare().Action(matchStartedActionData).Send(RoomDestination.Create(room));
 
             NotifyServerOfRoomStateUpdate(room.Server, room);
         }
@@ -262,11 +261,11 @@ namespace business.service
 
             if (room.PlayingUserCount == 0)
             {
-                room.State = Room.RoomState.IDLE;
+                room.SetState(Room.RoomState.IDLE);
 
                 int state = (int)Room.RoomState.IDLE;
-                ActionData setRoomStateActionData = new ActionData(0x50, BitConverter.GetBytes(state));
-                ActionDispatcher.Prepare().Action(setRoomStateActionData).Send(new RoomDestination(room));
+                ActionData setRoomStateActionData = new ActionData(0x50, state, 4);
+                ActionDispatcher.Prepare().Action(setRoomStateActionData).Send(RoomDestination.Create(room));
 
                 NotifyServerOfRoomStateUpdate(user.Server, room);
             }
@@ -288,29 +287,29 @@ namespace business.service
         public void NotifyServerOfRoomCreation(GameServer server, Room room)
         {
             ActionDispatcher.Prepare()
-                .Action(new RoomCreationNotifyActionTemplate(room).Data)
-                .Send(new ServerDestination(server, 1));
+                .Action(RoomCreationNotifyActionTemplate.Create(room).Data)
+                .Send(ServerDestination.Create(server, 1));
         }
 
         public void NotifyServerOfRoomMasterChange(GameServer server, Room room)
         {
-            RoomUpdateInfo updateInfo = new RoomUpdateInfo { RoomId = room.Id, RoomMaster = room.RoomMaster.Player.Name };
-            ActionData action = new ActionData(0x2E, updateInfo.ToByteArray());
-            ActionDispatcher.Prepare().Action(action).Send(new ServerDestination(server, 1));
+            RoomUpdateInfo updateInfo = new RoomUpdateInfo { RoomId = room.Id, RoomMaster = room.RoomMaster?.Player.Name ?? "" };
+            ActionData action = new ActionData(0x2E, updateInfo, sizeof(RoomUpdateInfo));
+            ActionDispatcher.Prepare().Action(action).Send(ServerDestination.Create(server, 1));
         }
 
         public void NotifyServerOfRoomPlayerCountUpdate(GameServer server, Room room)
         {
             RoomUpdateInfo updateInfo = new RoomUpdateInfo { RoomId = room.Id, PlayerCount = room.UsersInCount };
-            ActionData action = new ActionData(0x2F, updateInfo.ToByteArray());
-            ActionDispatcher.Prepare().Action(action).Send(new ServerDestination(server, 1));
+            ActionData action = new ActionData(0x2F, updateInfo, sizeof(RoomUpdateInfo));
+            ActionDispatcher.Prepare().Action(action).Send(ServerDestination.Create(server, 1));
         }
 
         public void NotifyServerOfRoomStateUpdate(GameServer server, Room room)
         {
-            RoomUpdateInfo updateInfo = new RoomUpdateInfo { RoomId = room.Id, State = (int)room.State };
-            ActionData action = new ActionData(0x30, updateInfo.ToByteArray());
-            ActionDispatcher.Prepare().Action(action).Send(new ServerDestination(server, 1));
+            RoomUpdateInfo updateInfo = new RoomUpdateInfo { RoomId = room.Id, State = room.State };
+            ActionData action = new ActionData(0x30, updateInfo, sizeof(RoomUpdateInfo));
+            ActionDispatcher.Prepare().Action(action).Send(ServerDestination.Create(server, 1));
         }
 
         private void ResetRoom(Room room)
@@ -324,9 +323,9 @@ namespace business.service
             if (room.State == Room.RoomState.IN_GAME)
                 return;
 
-            bool needsUserUpdateNotification = room.GetSlotUserListIndex(Constants.ROOM_MASTER_SLOT) == -1;
+            bool needsUserUpdateNotification = room.GetSlotUserListIndex(ROOM_MASTER_SLOT) == -1;
 
-            room.SetUserToSlot(room.RoomMasterListIndex, Constants.ROOM_MASTER_SLOT);
+            room.SetUserToSlot(room.RoomMasterListIndex, ROOM_MASTER_SLOT);
             if (room.GameInfo.MatchType == MatchType.MATCH_CHALLENGE)
                 needsUserUpdateNotification |= UpdateChallenge(room);
 
@@ -336,7 +335,7 @@ namespace business.service
 
         private bool UpdateChallenge(Room room)
         {
-            List<int> userQueue = room.UserQueue;
+            var userQueue = room.UserQueue;
             if (userQueue.Count == 0)
                 return false;
 
