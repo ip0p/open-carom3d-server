@@ -74,8 +74,8 @@ namespace business
             if (account == null)
                 return;
 
-            User loggedUser = m_usersAccounts[account];
-            if (loggedUser != null)
+            User loggedUser;
+            if (m_usersAccounts.TryGetValue(account, out loggedUser))
             {
                 ActionData disconnectAction = new ActionData(0x35);
                 ActionDispatcher.Prepare().Action(disconnectAction).Send(new UserDestination(loggedUser));

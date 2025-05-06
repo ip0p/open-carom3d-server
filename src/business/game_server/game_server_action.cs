@@ -18,7 +18,7 @@ namespace business.game_server
 
         protected T Cast(ActionData action)
         {
-            return (T)Convert.ChangeType(action.Data, typeof(T));
+            return (T)Convert.ChangeType(action.Content, typeof(T));
         }
 
         public abstract void Execute(ActionData action, User user, T data);

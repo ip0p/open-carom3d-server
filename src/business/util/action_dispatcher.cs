@@ -17,13 +17,13 @@ namespace business
             return new ActionDispatcher();
         }
 
-        public ActionDispatcher Action(ActionData data)
+        public ActionDispatcher AddAction(ActionData data)
         {
             m_actions.Add(data);
             return this;
         }
 
-        public void Send(Destination destination)
+        public void SendToDestination(Destination destination)
         {
             destination.Send(m_actions);
         }

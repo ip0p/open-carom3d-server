@@ -29,7 +29,7 @@ namespace business.management_server.actions
                 player = AccountService.GetInstance().GetPlayer(account);
             }
 
-            account.Player = player;
+            account.SetPlayer(player);
 
             user.SetAccount(account);
             user.SetPlayer(player);

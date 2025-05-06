@@ -17,15 +17,15 @@ Incoming for v0.4.0 - ALPHA:
 ----------------------------------------------------
 
 How to build:
-Before building, open the server_starter.cpp file and change the IP you want to expose.
-This is a CMake C++ project, just use a supporting CMake compatible compiler (like updated versions of Visual Studio, MinGW etc).
+Before building, open the server_starter.cs file and change the IP you want to expose.
+This is a .NET C# project, just use a supporting .NET compatible compiler (like updated versions of Visual Studio, etc).
 
 *Windows only for now, there are plans for Unix-like systems though.
 
 ----------------------------------------------------
 
 How to run:
-Double click on the geerated server executable.
+Double click on the generated server executable.
 
 For remote connections (playing with friends), tell your friends to:
 - Download the official Carom3D 5.31 (Last official version) executable;
@@ -43,6 +43,14 @@ YOUR_EXPOSED_IP carom3d.gameis.com
 - Log in with any id/password;
 
 - Enjoy.
+
+----------------------------------------------------
+
+How to compile the project:
+1. Install .NET SDK from https://dotnet.microsoft.com/download
+2. Open a terminal and navigate to the project directory
+3. Run the following command to compile the project:
+   dotnet build
 
 ----------------------------------------------------
 

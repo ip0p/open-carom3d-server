@@ -162,7 +162,7 @@ namespace business.game_server
     {
         public override void Execute(ActionData action, User user, byte[] data)
         {
-            UserService.GetInstance().SendMatchEventInfo(user, data, action.Data.Length);
+            UserService.GetInstance().SendMatchEventInfo(user, data, (uint)action.Content.Count);
         }
     }
 
@@ -170,7 +170,7 @@ namespace business.game_server
     {
         public override void Execute(ActionData action, User user, byte[] data)
         {
-            UserService.GetInstance().SendMatchEventInfo2(user, data, action.Data.Length);
+            UserService.GetInstance().SendMatchEventInfo2(user, data, (uint)action.Content.Count);
         }
     }
 
@@ -202,7 +202,7 @@ namespace business.game_server
     {
         public override bool Validate(ActionData action)
         {
-            return action.Data.Length < (151 * sizeof(char));
+            return action.Content.Count < (151 * sizeof(char));
         }
 
         public override void Execute(ActionData action, User user, string data)

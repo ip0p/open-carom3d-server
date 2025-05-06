@@ -49,7 +49,7 @@ namespace business
 
         public override void Send(List<ActionData> actions)
         {
-            foreach (var user in _channel.UsersIn())
+            foreach (var user in _channel.UsersIn)
             {
                 foreach (var action in actions)
                     user.SendAction(action);
@@ -68,7 +68,7 @@ namespace business
 
         public override void Send(List<ActionData> actions)
         {
-            foreach (var user in _room.Users())
+            foreach (var user in _room.Users)
             {
                 foreach (var action in actions)
                     user.SendAction(action);
