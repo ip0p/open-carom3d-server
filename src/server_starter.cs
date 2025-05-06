@@ -108,5 +108,17 @@ namespace server_starter
             HTTPServer httpServer = new HTTPServer(new ServerConfig(hostname, 80));
             httpServer.Run();
         }
+
+        private static void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        private static void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

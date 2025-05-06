@@ -41,5 +41,17 @@ namespace core
             info.parsedTotalLen = parsedLen;
             return info;
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running Carom3D message parser server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling Carom3D message parser project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

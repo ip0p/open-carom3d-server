@@ -26,4 +26,16 @@ namespace core
         public abstract bool Validate(ActionData action);
         public abstract void Execute(ActionData action, ClientSession client);
     }
+
+    public void RunServerUsingGitHubActions()
+    {
+        Console.WriteLine("Running Carom3D action server using GitHub Actions...");
+        // Add your GitHub Actions specific code here
+    }
+
+    public void CompileProjectUsingGitHubActions()
+    {
+        Console.WriteLine("Compiling Carom3D action project using GitHub Actions...");
+        // Add your GitHub Actions specific code here
+    }
 }

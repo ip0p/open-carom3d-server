@@ -30,6 +30,18 @@ namespace business.management_server
         {
             // TODO: Handle client disconnection
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running management server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling management server project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 
     public class ManagementServerProtocol : Carom3DProtocol

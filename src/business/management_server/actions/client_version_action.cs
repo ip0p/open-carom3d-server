@@ -15,5 +15,17 @@ namespace business.management_server.actions
         {
             Console.WriteLine(data);
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running client version action server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling client version action project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

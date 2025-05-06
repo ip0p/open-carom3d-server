@@ -165,5 +165,17 @@ namespace core
                 Thread.Sleep(100);
             }
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running HTTP server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling HTTP server project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

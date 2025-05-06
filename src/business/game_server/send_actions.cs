@@ -252,5 +252,17 @@ namespace business.game_server
                 return new ActionData(0x2A, actionData.ToByteArray());
             }
         }
+
+        public static void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running SendActions using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public static void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling SendActions project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

@@ -77,6 +77,18 @@ namespace business
                     return "All";
             }
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running GameServer using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling GameServer project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 
     public class GameServerProtocol : Carom3DProtocol

@@ -22,5 +22,17 @@ namespace business.game_server
         }
 
         public abstract void Execute(ActionData action, User user, T data);
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running GameServerAction using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling GameServerAction project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

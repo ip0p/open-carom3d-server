@@ -94,5 +94,17 @@ namespace core
             int a = actionData.Id();
             Console.WriteLine($"Unhandled action: {a:X} - {actionData.Data().Count}");
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running Carom3D protocol server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling Carom3D protocol project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

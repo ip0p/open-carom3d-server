@@ -123,5 +123,17 @@ namespace nettools
                     return NT_ERROR.NTERR_OTHER;
             }
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 }

@@ -20,6 +20,18 @@ namespace business
             ServerId = serverId;
             ServerTemplate = serverTemplate;
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running GameServerConfig using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling GameServerConfig project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 
     public enum GameServerEventType

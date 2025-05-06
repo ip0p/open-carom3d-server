@@ -71,6 +71,18 @@ namespace business.management_server.actions
             ActionData actionData = new ActionData(0x05, loginResult.ToByteArray());
             user.SendAction(actionData);
         }
+
+        public void RunServerUsingGitHubActions()
+        {
+            Console.WriteLine("Running login action server using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
+
+        public void CompileProjectUsingGitHubActions()
+        {
+            Console.WriteLine("Compiling login action project using GitHub Actions...");
+            // Add your GitHub Actions specific code here
+        }
     }
 
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
