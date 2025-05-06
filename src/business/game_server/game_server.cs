@@ -6,15 +6,15 @@ namespace business
 {
     public class GameServer : Carom3DServer
     {
-        private string m_qualifiedName;
-        private List<Room> m_rooms;
+        private string qualifiedName;
+        private List<Room> rooms;
         public GameServerConfig gsConfig;
 
         public GameServer(GameServerConfig config) : base(config)
         {
             gsConfig = config;
-            m_qualifiedName = config.serverName + " - " + ResolveTableTypeName(config.tableType);
-            m_rooms = new List<Room>();
+            qualifiedName = config.serverName + " - " + ResolveTableTypeName(config.tableType);
+            rooms = new List<Room>();
         }
 
         public override void OnClientDisconnection(ClientSession client)
@@ -31,16 +31,16 @@ namespace business
 
         public int CreateRoom(string title, User user, int maxPlayers, Room.GameInfo gameInfo, out Room pRetRoom)
         {
-            pRetRoom = new Room(this, m_rooms.Count, title, user, maxPlayers, gameInfo);
-            m_rooms.Add(pRetRoom);
+            pRetRoom = new Room(this, (uint)rooms.Count, title, user, maxPlayers, gameInfo);
+            rooms.Add(pRetRoom);
             return 0;
         }
 
         public Room GetRoom(string title)
         {
-            foreach (var room in m_rooms)
+            foreach (var room in rooms)
             {
-                if (room.Name() == title)
+                if (room.Name == title)
                     return room;
             }
             return null;
@@ -48,19 +48,19 @@ namespace business
 
         public int DestroyRoom(Room room)
         {
-            if (m_rooms.Remove(room))
+            if (rooms.Remove(room))
                 return 0;
             return 1;
         }
 
         public string QualifiedName()
         {
-            return m_qualifiedName;
+            return qualifiedName;
         }
 
         public List<Room> Rooms()
         {
-            return m_rooms;
+            return rooms;
         }
 
         private static string ResolveTableTypeName(int tableType)
@@ -101,13 +101,13 @@ namespace business
         public override void OnUnhandledUserAction(Carom3DUserSession session, ActionData actionData)
         {
             User user = (User)session;
-            if (user.Player() == null)
+            if (user.Player == null)
             {
                 base.OnUnhandledUserAction(session, actionData);
             }
             else
             {
-                Console.WriteLine($"Unhandled client action: {user.Player().Name()} - {actionData.Id()} - {actionData.Data().Count}");
+                Console.WriteLine($"Unhandled client action: {user.Player.Name} - {actionData.Id()} - {actionData.Data().Count}");
                 Console.WriteLine("Data: ");
                 foreach (byte b in actionData.Data())
                 {
