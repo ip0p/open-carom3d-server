@@ -4,16 +4,16 @@ using business.entity;
 
 namespace business.management_server.actions
 {
-    public class LoginAction
+    public class LoginAction : ManagementServerAction<LoginData>
     {
-        public bool Validate(ActionData action)
+        public override bool Validate(ActionData action)
         {
             int size = action.Data.Length;
-            int expectedSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(LoginActionData));
+            int expectedSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(LoginData));
             return size == expectedSize;
         }
 
-        public void Execute(ActionData action, User user, LoginActionData data)
+        public override void Execute(ActionData action, User user, LoginData data)
         {
             Console.WriteLine($"Player logged in: {data.Username}, {data.Password}");
 
@@ -100,5 +100,19 @@ namespace business.management_server.actions
         public uint Unk5;
         public uint Unk6;
         public uint Unk7;
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    public struct LoginData
+    {
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 21)]
+        public string Username;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 13)]
+        public string Password;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 4)]
+        public string Country;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst = 144)]
+        public byte[] GpuInfo;
+        public int Unk;
     }
 }

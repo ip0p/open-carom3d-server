@@ -35,4 +35,22 @@ namespace business
         public int MinPoints { get; set; }
         public int MaxPoints { get; set; }
     }
+
+    public struct GameServerGeneralConfig
+    {
+        public int InitialRating { get; set; }
+        public int BasePoints { get; set; }
+        public int ArcadeDifficultyMultiplier { get; set; }
+        public int SimuDifficultyMultiplier { get; set; }
+        public int[] GameMultiplier { get; set; }
+
+        public GameServerGeneralConfig(int initialRating, int basePoints, int arcadeDifficultyMultiplier, int simuDifficultyMultiplier, int[] gameMultiplier)
+        {
+            InitialRating = initialRating;
+            BasePoints = basePoints;
+            ArcadeDifficultyMultiplier = arcadeDifficultyMultiplier;
+            SimuDifficultyMultiplier = simuDifficultyMultiplier;
+            GameMultiplier = gameMultiplier;
+        }
+    }
 }
